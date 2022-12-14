@@ -1,0 +1,4 @@
+﻿  Projekt.cpp
+C:\Users\super\source\repos\Projekt\Projekt\Projekt.cpp(3,10): warning C4067: nieoczekiwane tokeny występujące po dyrektywie preprocesora - oczekiwano nowego wiersza
+C:\Users\super\source\repos\Projekt\Projekt\Projekt.cpp(69,21): warning C4267: "return": konwersja z "size_t" do "int", możliwa utrata danych
+  Projekt.vcxproj -> C:\Users\super\source\repos\Projekt\x64\Debug\Projekt.exe
