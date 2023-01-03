@@ -1,6 +1,6 @@
 ﻿#include <iostream>
 #include <locale.h>
-#include "windows.h";
+#include "windows.h"
 #include <string>
 using namespace std;
 
@@ -10,7 +10,7 @@ using namespace std;
 /*
 	Autor: Jakub Zaborowski
 	Temat: Projekt semestralny - PESEL decrypter
-	Data: 02.01.2023
+	Data: 03.01.2023
 */
 
 
@@ -82,7 +82,7 @@ string monthChecker(int monthInt) {
 
 
 //funkcja zwracjąca płeć z podanego PESELU
-string sexChecker(int number) {
+string genderChecker(int number) {
 	if (number % 2 == 0) {
 		return "kobieta";
 	}
@@ -107,26 +107,14 @@ string stringConverter(string PESEL, int index, int countOfElements) {
 
 
 
-
-
-
-//funkcja budująca i zwracająca pełną datę używającą tylko liczb
-string numberDateBuilder(string day, string month, string year) {
-	return day + "." + month + "." + year;
-}
-
-
-
-
-
-
-
-
-
-
-//funkcja budująca i zwracająca pełną datę
-string textDateBuilder(int day, string month, string year) {
-	return to_string(day) + " " + month + " " + year;
+//funkcja tworząca odpowiedni rodzaj daty zależnie od wprowadzonej zmiennej sprawdzającej (1 - data liczbowa, inna liczba - data z tekstem)
+string dateBuilder(string day, string month, string year, int check) {
+	if (check == 1) {
+		return day + "." + month + "." + year;
+	}
+	else {
+		return to_string(stoi(day)) + " " + month + " " + year;
+	}
 }
 
 
@@ -153,6 +141,7 @@ string monthToText(int month) {
 	case 10: return "październik"; break;
 	case 11: return "listopad"; break;
 	case 12: return "grudzień"; break;
+	default: return "nieznany miesiąc"; break;
 	}
 }
 
@@ -177,6 +166,7 @@ string setPESEL() {
 
 
 
+//funkcja ustalająca rodzaj roku urodzenia z PESEL-u (zwyczajny czy przestępny)
 string yearTypeChecker(int year) {
 	if (year % 400 == 0) {
 		return "przestępny";
@@ -191,6 +181,26 @@ string yearTypeChecker(int year) {
 		return "normalny";
 	}
 }
+
+
+
+
+
+
+//funkcja ustawiająca kolor czcionki zależnie spełnionego warunku
+void colorChecker(string text) {
+	if (text == "przestępny" || text == "kobieta") {
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+	}
+	else if (text == "normalny" || text == "mężczyzna") {
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN);
+	}
+	else {
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
+	}
+}
+
+
 
 
 
@@ -244,53 +254,13 @@ void errorAlert() {
 
 
 
-
-
-//funkcja wyświetlająca odpowiednio sformatowaną stylistycznie datę
-void numberDateWriter(string date) {
-	cout << endl << "Twoja data urodzenia (data używając samych liczb): ";
-	
-	//funkcja zmieniająca kolor czcionki (w tym przypadku na zielony)
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
-	cout << date;
+//funkcja wypisująca wszystkie dane pobrane z PESEL-u
+void dataWriter(string text, string data) {
+	cout << text;
+	colorChecker(data);
+	cout << data << endl << endl;
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-	cout << endl << endl;
 }
-
-
-
-
-
-//funkcja wyświetlająca odpowiednio sformatowaną stylistycznie datę
-void sexWriter(string sex) {
-	cout << "Twoja płeć: ";
-	if (sex == "mężczyzna") {
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN);
-	}
-	else {
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	}
-	cout << sex;
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-	cout << endl << endl;
-}
-
-
-
-
-
-
-
-
-//funkcja wyświetlająca odpowiednio sformatowaną stylistycznie płeć
-void textDateWriter(string date) {
-	cout << "Twoja data urodzenia: ";
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
-	cout << date;
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-	cout << endl << endl;
-}
-
 
 
 
@@ -304,31 +274,6 @@ void endOfApp() {
 	Sleep(4000);
 	cout << endl << endl;
 }
-
-
-
-
-
-//funkcja sprawdzająca i zwracająca rodzaj roku urodzenia
-void yearTypeWriter(string yearType) {
-	cout << "Rodzaj roku, w którym się urodziłeś: ";
-	if (yearType == "normalny") {
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN);
-	}
-	else {
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	}
-	cout << yearType;
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-	cout << endl << endl;
-}
-
-
-
-
-
-
-
 
 
 
@@ -350,7 +295,6 @@ int peselSizeBuilder(string PESEL) {
 //funkcja zwracająca liczbę 1 w celu sprawdzenia poprawności PESELU
 int peselChecker(int peselLen, int controlSum) {
 	if (peselLen < 11 || peselLen > 11 || controlSum % 10 != 0) {
-		;
 		return 1;
 	}
 	else {
@@ -367,11 +311,25 @@ int peselChecker(int peselLen, int controlSum) {
 
 
 //funkcja zwracająca sumę kontrolną 
-int controlSumCalculator(int first, int second, int third, int fourth, int fifth, int sixth, int seventh, int eighth, int ninth, int tenth, int eleventh) {
-	return (first * 1) + (second * 3) + (third * 7) + (fourth * 9) + (fifth * 1) + (sixth * 3) + (seventh * 7) + (eighth * 9) + (ninth * 1) + (tenth * 3) + (eleventh * 1);
+int controlSumCalculator(int tab[]) {
+	int controlSum = 0;
+	
+	for (int i = 0; i < 11; i++) {
+		if (i == 0 || i == 4 || i == 8 || i == 10) {
+			controlSum += tab[i] * 1;
+		}
+		else if (i == 1 || i == 5 || i == 9) {
+			controlSum += tab[i] * 3;
+		}
+		else if (i == 2 || i == 6) {
+			controlSum += tab[i] * 7;
+		}
+		else if (i == 3 || i == 7) {
+			controlSum += tab[i] * 9;
+		}
+	}
+	return controlSum;
 }
-
-
 
 
 
@@ -379,7 +337,8 @@ int controlSumCalculator(int first, int second, int third, int fourth, int fifth
 
 //funkcja zapisująca cyfry z PESEL-u w tablicy
 int* arrayFill(string PESEL) {
-	static int array[11];
+	
+	static int array[11]{};
 
 	for (int i = 0; i < 11; i++) {
 		array[i] = stoi(stringConverter(PESEL, i, 1));
@@ -387,6 +346,8 @@ int* arrayFill(string PESEL) {
 
 	return array;
 }
+
+
 
 
 
@@ -400,6 +361,7 @@ int main() {
 	setLanguage();
 
 	string PESEL;
+
 	PESEL = setPESEL();
 
 
@@ -410,7 +372,7 @@ int main() {
 	int* peselArray = arrayFill(PESEL);
 
 
-	int controlSum = controlSumCalculator(peselArray[0], peselArray[1], peselArray[2], peselArray[3], peselArray[4], peselArray[5], peselArray[6], peselArray[7], peselArray[8], peselArray[9], peselArray[10]);
+	int controlSum = controlSumCalculator(peselArray);
 	int checker = peselChecker(peselLen, controlSum);
 
 
@@ -420,60 +382,59 @@ int main() {
 		errorAlert();
 		main();
 	}
+
 	else {
-		
+
 		string year = stringConverter(PESEL, 0, 2),
 			month = stringConverter(PESEL, 2, 2),
 			day = stringConverter(PESEL, 4, 2),
-			
-			
+
+
 			//zmienne oznaczające dane gotowe do utworzenia daty
 			yearFull,
 			monthFull,
 
 
 			monthText,
-			sex,
-
-			//pełne daty gotowe do wyświetlenia (number - data z samych liczb, text - liczby z tekstem
-			numberDateOfBirth,
-			textDateOfBirth;
+			gender,
 
 
+			//pełna data gotowa do wyświetlenia
+			dateOfBirth;
 
 
-		int monthInt = stoi(month),
-			yearInt = stoi(year),
-			dayInt = stoi(day);
+
+		string yearType = yearTypeChecker(stoi(year));
 
 
-		string yearType = yearTypeChecker(yearInt);
 
 
-		yearFull = yearChecker(monthInt, year);
-		monthFull = monthChecker(monthInt);
+		yearFull = yearChecker(stoi(month), year);
+		monthFull = monthChecker(stoi(month));
+
 
 
 		monthText = monthToText(stoi(monthFull));
 
+		cout << endl;
 
-		numberDateOfBirth = numberDateBuilder(day, monthFull, yearFull);
-		textDateOfBirth = textDateBuilder(dayInt, monthText, yearFull);
-		
-		
-		sex = sexChecker(peselArray[9]);
-		
 
-		numberDateWriter(numberDateOfBirth);
-		textDateWriter(textDateOfBirth);
-		sexWriter(sex);
-		yearTypeWriter(yearType);
+		dateOfBirth = dateBuilder(day, monthFull, yearFull, 1);
+		dataWriter("Twoja data urodzenia (używając tylko liczb): ", dateOfBirth);
 
+
+
+		dateOfBirth = dateBuilder(day, monthText, yearFull, 2);
+		dataWriter("Twoja data urodzenia: ", dateOfBirth);
+
+
+
+		gender = genderChecker(peselArray[9]);
+		dataWriter("Twoja płeć: ", gender);
+
+
+		dataWriter("Rodzaj roku, w którym się urodziłeś (normalny/przestępny): ", yearType);
 
 		endOfApp();
 	}
 }
-
-
-
-
